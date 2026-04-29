@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build macOS (x64 + arm64, dmg + zip)
-        run: npm run dist:mac -- --publish never
+      - name: Build macOS arm64 DMG (ad-hoc signed)
+        run: npx electron-builder --mac dmg --arm64 --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           GH_TOKEN: ""

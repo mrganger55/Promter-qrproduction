@@ -74,7 +74,7 @@
       "artifactName": "QR-Prompter-${version}-${arch}.${ext}",
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "identity": null,
+      "identity": "-",
       "extendInfo": {
         "NSHighResolutionCapable": true,
         "NSRequiresAquaSystemAppearance": false,
