@@ -2,7 +2,27 @@
 
 > Üst seviye için → [SISTEM.md](../SISTEM.md) · Eski notlar → [BUILD-NOTES.md](../BUILD-NOTES.md)
 
-**Son güncellenme:** 2026-04-29 — İterasyon 18: Electron IPC eklendi, Windows build çalıştırıldı (sonuç build raporunda)
+**Son güncellenme:** 2026-04-30 — İterasyon 20: GitHub Actions Mac build kuruldu, ilk build başarılı, 4 dosya üretildi.
+
+---
+
+## GitHub Actions Mac Build (İt.20)
+
+- **Repo:** https://github.com/mrganger55/Promter-qrproduction (private)
+- **Workflow:** `.github/workflows/build-mac.yml`
+- **Tetikleme:** her `push` to main + manuel (Actions sekmesi → "Run workflow")
+- **Runner:** `macos-latest` (cloud Mac, x64+arm64 build için)
+- **Süre:** ~2 dk (npm install dahil ~3 dk)
+- **Çıktı:** Artifact ZIP (393 MB) — 30 gün saklanır
+
+### Önemli flag'ler
+- `--publish never` → CI'da auto-release publish'i kapatır (yoksa GH_TOKEN ister, build patlar)
+- `CSC_IDENTITY_AUTO_DISCOVERY: false` → code signing'i kapatır (Apple Developer hesabı yok)
+
+### Indirme
+GitHub UI: Actions → ilgili run → Artifacts → ZIP indir
+veya API: `curl` ile `archive_download_url` (token ile auth)
+
 
 ---
 

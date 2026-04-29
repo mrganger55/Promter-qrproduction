@@ -2,7 +2,7 @@
 
 > **Bu dosya ana indekstir.** Detaylar `docs/` altında. Her güncellemede ilgili alt-dosya + bu indeks + `data/GELISIM-NOTLARI.md` birlikte güncellenir.
 
-**Son güncellenme:** 2026-04-29 — İt.19: macOS build hazırlığı tamamlandı (package.json mac target detaylı, main.js Backup Mac yolu, KURULUM-MAC.md adım adım, EBD-mac-source.zip transferli). Mac'te tek komutla `npm run dist:mac` → 4 DMG/ZIP üretilir.
+**Son güncellenme:** 2026-04-30 — İt.20: GitHub Actions Mac build çalışıyor. Repo `mrganger55/Promter-qrproduction` (private). Her push otomatik 4 DMG/ZIP üretiyor; ilk build başarılı, dosyalar `Desktop/EBD-mac-builds/` altında.
 
 ---
 

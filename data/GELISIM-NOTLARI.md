@@ -1,5 +1,27 @@
 # QR Production Prompter — Gelişim Notları
 
+## İterasyon 20 (30 Nisan 2026) — GitHub Actions Mac build çalışır halde
+### Yapılan
+- [x] **Yeni dosya:** `.github/workflows/build-mac.yml` — `runs-on: macos-latest` üzerinde `npm install` + `npm run dist:mac` + artifact upload
+- [x] **Yeni repo:** Private — https://github.com/mrganger55/Promter-qrproduction
+- [x] **`.gitignore` genişletildi:** `Backup/`, `.claude/`, `EBD-mac-source.zip` eklendi
+- [x] **İlk build hatası teşhisi:** `electron-builder` CI'da auto-publish denedi → `GH_TOKEN` istedi → exit 1
+- [x] **Düzeltme (commit 51ba956):** Workflow'a `npm run dist:mac -- --publish never` + `GH_TOKEN: ""` env eklendi
+- [x] **Build #2 başarılı** (~2 dk derleme): 4 artifact üretildi
+  - `QR-Prompter-1.2.0-arm64.dmg` (94 MB) — Apple Silicon
+  - `QR-Prompter-1.2.0-x64.dmg` (98 MB) — Intel Mac
+  - `QR-Prompter-1.2.0-arm64.zip` (91 MB)
+  - `QR-Prompter-1.2.0-x64.zip` (95 MB)
+- [x] Artifact ZIP (376 MB) `C:/Users/QR/Desktop/EBD-mac-builds/` altına indirildi
+
+### Neden
+İt.19'da Mac DMG'yi üretmek için kullanıcının Mac'e fiziksel erişmesi gerekiyordu. GitHub Actions cloud macOS runner'ı ile bu bağımlılık kaldırıldı. Her `git push` ile otomatik 4 dosya üretilir, private repo şarkı sözlerini koruyor. Ücretsiz quota: ayda ~20 build (private + macOS runner).
+
+### Bilinen detay
+- `actions/checkout@v4` ve `actions/setup-node@v4` Node.js 20 üzerinde çalışıyor → GitHub deprecation uyarısı veriyor (2026-06-02 sonrası Node 24'e zorlanır). Şimdilik build'i etkilemiyor.
+
+---
+
 ## İterasyon 19 (29 Nisan 2026) — macOS build hazırlığı
 ### Kararlar (yazılımsal)
 - **Cross-build kapalı:** electron-builder 25.x Windows'tan macOS DMG üretmiyor (`Build for macOS is supported only on macOS`). Build Mac'te yapılacak.
