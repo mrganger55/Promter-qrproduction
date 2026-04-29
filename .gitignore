@@ -1,0 +1,22 @@
+node_modules/
+dist-app/
+Backup/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Office temp dosyaları
+~$*
+
+# Editör
+.vscode/
+.idea/
+
+# Kaynak transfer arşivi
+EBD-mac-source.zip

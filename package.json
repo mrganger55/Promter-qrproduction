@@ -1,0 +1,98 @@
+{
+  "name": "qr-production-prompter",
+  "productName": "QR Production Prompter",
+  "version": "1.2.0",
+  "description": "QR Production Prompter — Elif Buse Doğan sahne prompter sistemi",
+  "main": "main.js",
+  "author": "QR Productions",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:all": "electron-builder -mw"
+  },
+  "devDependencies": {
+    "electron": "^32.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.qrproduction.prompter",
+    "productName": "QR Production Prompter",
+    "directories": {
+      "output": "dist-app",
+      "buildResources": "build"
+    },
+    "asarUnpack": [
+      "data/**",
+      "Şarkılar TXT/**",
+      "EBD Setlist/**"
+    ],
+    "files": [
+      "main.js",
+      "index.html",
+      "prompter.html",
+      "css/**",
+      "js/**",
+      "data/**",
+      "Şarkılar TXT/**",
+      "EBD Setlist/**",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.map",
+      "!**/*.{log,bak,tmp}",
+      "!~$*",
+      "!BAŞLAT.bat",
+      "!build.py",
+      "!BUILD-NOTES.md"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "artifactName": "QR-Prompter-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "QR Prompter",
+      "installerLanguages": ["tr_TR", "en_US"],
+      "language": "1055"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "category": "public.app-category.music",
+      "darkModeSupport": true,
+      "minimumSystemVersion": "11.0",
+      "artifactName": "QR-Prompter-${version}-${arch}.${ext}",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "identity": null,
+      "extendInfo": {
+        "NSHighResolutionCapable": true,
+        "NSRequiresAquaSystemAppearance": false,
+        "LSApplicationCategoryType": "public.app-category.music",
+        "CFBundleDisplayName": "QR Prompter"
+      }
+    },
+    "dmg": {
+      "title": "QR Prompter ${version}",
+      "writeUpdateInfo": false,
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "contents": [
+        { "x": 140, "y": 180, "type": "file" },
+        { "x": 400, "y": 180, "type": "link", "path": "/Applications" }
+      ]
+    }
+  }
+}

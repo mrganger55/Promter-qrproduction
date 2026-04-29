@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Production Prompter — Kontrol Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/control.css?v=17.6">
+</head>
+<body>
+
+    <!-- ===== TOP BAR ===== -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <span class="logo-badge">QR</span>
+                <span class="logo-title">Production Prompter</span>
+            </div>
+            <div class="ws-group">
+                <select id="workspaceSelect" class="sel-ws">
+                    <option>Elif Buse Doğan</option>
+                </select>
+                <button class="btn btn-sm btn-outline" id="btnNewWS">Yeni</button>
+                <button class="btn btn-sm btn-danger-outline" id="btnDelWS">Sil</button>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <!-- Live Status -->
+            <div class="live-status" id="liveStatus">
+                <span class="live-dot" id="liveDot"></span>
+                <div class="live-info">
+                    <span class="live-label" id="liveLabel">Prompter Kapalı</span>
+                    <span class="live-detail" id="liveDetail">—</span>
+                </div>
+            </div>
+            <span class="topbar-sep"></span>
+            <!-- it.17.6: Backup -->
+            <div class="backup-strip" title="Otomatik yedekleme">
+                <button class="btn btn-sm btn-outline" id="btnBackupSave" title="Şimdi yedekle">💾 Yedekle</button>
+                <button class="btn btn-sm btn-outline" id="btnBackupList" title="Yedekleri görüntüle">📁 Yedekler</button>
+                <span class="backup-status" id="backupStatus" title="Backup klasör durumu">●</span>
+            </div>
+            <span class="topbar-sep"></span>
+            <button class="btn btn-sm btn-outline" id="btnImport">İçe Aktar</button>
+            <button class="btn btn-sm btn-outline" id="btnExport">Dışa Aktar</button>
+            <div class="launch-wrap">
+                <button class="btn btn-launch" id="btnLaunch">
+                    <span class="launch-ico">⧉</span>
+                    <span id="launchText">Prompter Aç</span>
+                </button>
+                <button class="btn btn-launch-menu" id="btnLaunchMenu" title="Ekran seç">▾</button>
+                <div class="launch-menu" id="launchMenu">
+                    <div class="lm-hdr">
+                        <span class="lm-title">Ekran Seç</span>
+                        <span class="lm-hint">Pencere veya Tam Ekran</span>
+                    </div>
+                    <div class="monitor-list" id="monitorList">
+                        <div class="mon-empty">Yükleniyor...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN ===== -->
+    <main class="layout">
+
+        <!-- LEFT: Setlist -->
+        <aside class="sidebar">
+            <div class="sidebar-hdr">
+                <h2>Setlist</h2>
+                <div class="sidebar-hdr-actions">
+                    <button class="btn-icon" id="btnLibrary" title="Şarkı Kütüphanesi">📚</button>
+                    <button class="btn-icon btn-icon-talk" id="btnAddTalk" title="Konuşma Ekle (seçili parçadan sonra)">🎤</button>
+                    <button class="btn-icon btn-icon-break" id="btnAddBreak" title="Ara Ekle (seçili parçadan sonra)">⏸</button>
+                </div>
+            </div>
+            <!-- Setlist search -->
+            <div class="sidebar-search">
+                <span class="sl-search-ico">🔍</span>
+                <input type="text" id="setlistSearch" class="sl-search" placeholder="Setliste ara..." autocomplete="off" spellcheck="false" />
+                <button class="sl-search-clear" id="setlistSearchClear" title="Temizle" hidden>✕</button>
+            </div>
+            <!-- Bulk action bar (appears when items selected) -->
+            <div class="bulk-bar" id="bulkBar" hidden>
+                <span class="bulk-count" id="bulkCount">0</span>
+                <button class="bulk-btn" id="bulkAll" title="Tümünü seç/bırak">☑</button>
+                <button class="bulk-btn" id="bulkUp" title="Seçilileri yukarı kaydır">↑</button>
+                <button class="bulk-btn" id="bulkDown" title="Seçilileri aşağı kaydır">↓</button>
+                <button class="bulk-btn bulk-del" id="bulkDel" title="Seçilileri sil">🗑</button>
+                <button class="bulk-btn bulk-clear" id="bulkClear" title="Seçimi temizle">✕</button>
+            </div>
+            <div class="setlist-wrap" id="setlistWrap">
+                <!-- setlist items rendered by JS -->
+            </div>
+        </aside>
+
+        <!-- LIBRARY MODAL -->
+        <div class="lib-overlay" id="libOverlay" hidden>
+            <div class="lib-panel">
+                <div class="lib-hdr">
+                    <div class="lib-title">
+                        <span class="lib-ico">📚</span>
+                        <h3>Şarkı Kütüphanesi</h3>
+                        <span class="lib-count" id="libCount">0 şarkı</span>
+                    </div>
+                    <button class="btn-icon lib-close" id="libClose" title="Kapat">✕</button>
+                </div>
+                <div class="lib-search-row">
+                    <input type="text" id="libSearch" class="lib-search" placeholder="🔍 Şarkı ara..." />
+                    <button class="btn btn-sm btn-accent" id="libNewSong" title="Yeni şarkı ekle">➕ Yeni Şarkı</button>
+                    <button class="btn btn-sm btn-outline" id="libAddAll">Tümünü Ekle</button>
+                    <button class="btn btn-sm btn-save" id="libSaveDisk" title="Değişiklikleri 'Şarkılar TXT' klasörüne yaz">💾 TXT'e Kaydet <span class="lib-pending" id="libPendingBadge">0</span></button>
+                </div>
+                <div class="lib-workspace">
+                    <div class="lib-list" id="libList">
+                        <!-- songs rendered by JS -->
+                    </div>
+                    <div class="lib-editor" id="libEditor">
+                        <!-- editor form rendered by JS -->
+                    </div>
+                </div>
+                <div class="lib-foot">
+                    <span class="lib-hint" id="libHint">Satıra tıkla → setliste ekle · ✏ → düzenle · Yeni Şarkı → boş form</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER: Editor + Preview -->
+        <section class="center">
+            <div class="editor-bar">
+                <div class="editor-bar-left">
+                    <input type="text" id="songTitle" class="title-input" placeholder="Şarkı Adı" />
+                    <input type="text" id="songKey" class="key-input" placeholder="Ton: Am-Mi" />
+                    <select id="sectionType" class="sec-select">
+                        <option value="">Bölüm Ekle...</option>
+                        <option value="[VERSE]">[VERSE] — Kıta</option>
+                        <option value="[CHORUS]">[CHORUS] — Nakarat</option>
+                        <option value="[BRIDGE]">[BRIDGE] — Köprü</option>
+                        <option value="[INTRO]">[INTRO] — Giriş</option>
+                        <option value="[OUTRO]">[OUTRO] — Çıkış</option>
+                        <option value="[SOLO]">[SOLO] — Solo</option>
+                        <option value="[BREAK]">[BREAK] — Ara</option>
+                        <option value="[NOTE]">[NOTE] — Not</option>
+                    </select>
+                    <button class="btn btn-sm btn-pagebreak" id="btnPageBreak" title="Imleç konumuna sayfa sonu ekle (---)">↵ Sayfa Böl</button>
+                </div>
+                <div class="editor-bar-right">
+                    <button class="btn btn-sm btn-ghost" id="btnClear">Temizle</button>
+                    <button class="btn btn-sm btn-accent" id="btnSave">Kaydet</button>
+                </div>
+            </div>
+            <!-- it.17.5: Hızlı sembol ekleme barı -->
+            <div class="symbol-bar" id="symbolBar">
+                <span class="symbol-label">Hızlı Ekle:</span>
+                <button class="symbol-btn" data-sym="💃 Dans" title="Dans figürü">💃 Dans</button>
+                <button class="symbol-btn" data-sym="🎶 Melodi" title="Melodi solo">🎶 Melodi</button>
+                <button class="symbol-btn" data-sym="🥁 Ritim" title="Ritim parçası">🥁 Ritim</button>
+                <button class="symbol-btn" data-sym="🪘 Davul" title="Davul solo">🪘 Davul</button>
+                <button class="symbol-btn" data-sym="🎤 Anons" title="Anons / konuşma">🎤 Anons</button>
+                <button class="symbol-btn" data-sym="🎸 Gitar" title="Gitar solo">🎸 Gitar</button>
+                <button class="symbol-btn" data-sym="🎹 Piyano" title="Piyano solo">🎹 Piyano</button>
+                <button class="symbol-btn" data-sym="✋ Dur" title="Sahne bekle / dur">✋ Dur</button>
+            </div>
+            <textarea id="editor" class="editor" placeholder="Şarkı sözlerini veya sahne metnini buraya yazın...
+
+Bölüm etiketleri kullanabilirsiniz:
+[VERSE] — Kıta    [CHORUS] — Nakarat
+[BRIDGE] — Köprü  [NOTE] — Sahne notu
+
+Her çift boş satır sayfa sonu olarak kullanılır."></textarea>
+
+            <!-- Page Preview -->
+            <div class="preview-section">
+                <div class="preview-bar">
+                    <span class="pv-label">Sayfa Önizleme</span>
+                    <span class="pv-info" id="pvInfo">— / —</span>
+                </div>
+                <div class="preview-frame" id="previewFrame">
+                    <div class="preview-inner" id="previewInner">
+                        <p class="pv-empty">Sayfa önizlemesi</p>
+                    </div>
+                </div>
+                <div class="page-nav">
+                    <button class="btn btn-sm btn-outline" id="navFirst" title="İlk">⏮</button>
+                    <button class="btn btn-sm btn-outline" id="navPrev" title="Önceki">◀</button>
+                    <span class="nav-counter" id="navCounter">0 / 0</span>
+                    <button class="btn btn-sm btn-outline" id="navNext" title="Sonraki">▶</button>
+                    <button class="btn btn-sm btn-outline" id="navLast" title="Son">⏭</button>
+                </div>
+            </div>
+
+            <!-- Page Overview Strip -->
+            <div class="page-overview-wrap">
+                <div class="po-bar">
+                    <span class="po-label">Sayfa Haritası</span>
+                    <span class="po-legend">
+                        <span class="po-dot po-dot-past"></span>Geçen
+                        <span class="po-dot po-dot-active"></span>Aktif
+                        <span class="po-dot po-dot-future"></span>Gelecek
+                    </span>
+                </div>
+                <div class="page-overview" id="pageOverview">
+                    <div class="po-empty">Şarkı seçin</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: Controls -->
+        <aside class="controls">
+
+            <!-- Page Transport -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Sayfa Kontrolü</div>
+                <div class="transport">
+                    <button class="tr-btn" id="trFirst" title="İlk Sayfa">⏮</button>
+                    <button class="tr-btn" id="trPrev" title="Önceki">◀</button>
+                    <button class="tr-btn tr-play" id="trPlay" title="Otomatik Geçiş">▶</button>
+                    <button class="tr-btn" id="trNext" title="Sonraki">▶</button>
+                    <button class="tr-btn" id="trLast" title="Son Sayfa">⏭</button>
+                </div>
+            </div>
+
+            <!-- Auto Page Interval -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Otomatik Geçiş Süresi <span class="val-badge" id="valInterval">8 sn</span></div>
+                <div class="slider-row">
+                    <input type="range" id="sliderInterval" class="slider" min="3" max="60" value="8" />
+                </div>
+            </div>
+
+            <!-- Font Size (min) -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Min. Yazı Boyutu <span class="val-badge" id="valFontMin">32</span></div>
+                <div class="slider-row">
+                    <input type="range" id="sliderFontMin" class="slider" min="20" max="60" value="32" />
+                </div>
+            </div>
+
+            <!-- Font Size (max / preferred) -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Maks. Yazı Boyutu <span class="val-badge" id="valFontMax">72</span></div>
+                <div class="slider-row">
+                    <input type="range" id="sliderFontMax" class="slider" min="40" max="140" value="72" />
+                </div>
+            </div>
+
+            <!-- Reading Guide -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Okuma Rehber Çizgisi</div>
+                <div class="toggle-row">
+                    <span>Göster / Gizle</span>
+                    <label class="toggle"><input type="checkbox" id="chkGuide" checked /><span class="toggle-track"></span></label>
+                </div>
+                <div class="slider-row sub-row">
+                    <span class="sl-lbl">Konum</span>
+                    <input type="range" id="sliderGuidePos" class="slider" min="10" max="90" value="38" />
+                    <div class="sl-val"><span id="valGuidePos">38</span><small>%</small></div>
+                </div>
+                <div class="slider-row sub-row">
+                    <span class="sl-lbl">Kalınlık</span>
+                    <input type="range" id="sliderGuideW" class="slider" min="1" max="6" value="2" />
+                    <div class="sl-val"><span id="valGuideW">2</span><small>px</small></div>
+                </div>
+                <div class="color-row sub-row">
+                    <span class="sl-lbl">Renk</span>
+                    <div class="color-opts" id="guideColors">
+                        <button class="color-dot active" data-c="#ef4444" style="background:#ef4444" title="Kırmızı"></button>
+                        <button class="color-dot" data-c="#eab308" style="background:#eab308" title="Sarı"></button>
+                        <button class="color-dot" data-c="#22c55e" style="background:#22c55e" title="Yeşil"></button>
+                        <button class="color-dot" data-c="#6366f1" style="background:#6366f1" title="Mor"></button>
+                        <button class="color-dot" data-c="#ffffff" style="background:#ffffff" title="Beyaz"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Görünüm</div>
+                <div class="toggle-row"><span>Ayna (Mirror)</span><label class="toggle"><input type="checkbox" id="chkMirror" /><span class="toggle-track"></span></label></div>
+                <div class="toggle-row"><span>Bölüm Renkleri</span><label class="toggle"><input type="checkbox" id="chkSectionClr" checked /><span class="toggle-track"></span></label></div>
+            </div>
+
+            <!-- Prompter Alt Bar (Info Bar) -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Prompter Alt Bilgi Barı</div>
+                <div class="slider-row sub-row">
+                    <span class="sl-lbl">Boyut</span>
+                    <input type="range" id="sliderIbSize" class="slider" min="10" max="40" value="16" />
+                    <div class="sl-val"><span id="valIbSize">16</span><small>px</small></div>
+                </div>
+                <div class="slider-row sub-row">
+                    <span class="sl-lbl">Belirginlik</span>
+                    <input type="range" id="sliderIbOpacity" class="slider" min="20" max="100" value="85" />
+                    <div class="sl-val"><span id="valIbOpacity">85</span><small>%</small></div>
+                </div>
+                <div class="toggle-row"><span>Kronometre Göster</span><label class="toggle"><input type="checkbox" id="chkIbChrono" checked /><span class="toggle-track"></span></label></div>
+            </div>
+
+            <!-- Kronometre Boyutu (bu paneldeki alt bardaki) -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Kronometre Boyutu <span class="val-badge" id="valChronoSize">26</span></div>
+                <div class="slider-row">
+                    <input type="range" id="sliderChronoSize" class="slider" min="16" max="72" value="26" />
+                </div>
+            </div>
+
+            <!-- Theme -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Tema</div>
+                <div class="theme-row">
+                    <button class="th-btn active" data-theme="dark"><span class="th-sw dark-sw"></span>Koyu</button>
+                    <button class="th-btn" data-theme="light"><span class="th-sw light-sw"></span>Açık</button>
+                    <button class="th-btn" data-theme="high-contrast"><span class="th-sw hc-sw"></span>Kontrast</button>
+                </div>
+            </div>
+
+            <!-- Countdown -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Geri Sayım</div>
+                <div class="cd-row">
+                    <select id="cdSec" class="sel-sm">
+                        <option value="0">0 sn</option>
+                        <option value="3">3 sn</option>
+                        <option value="5" selected>5 sn</option>
+                        <option value="10">10 sn</option>
+                        <option value="30">30 sn</option>
+                    </select>
+                    <button class="btn btn-sm btn-accent" id="btnCD">Başlat</button>
+                </div>
+            </div>
+
+            <!-- Message to Artist -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Sanatçıya Mesaj <span class="msg-status" id="msgStatus"></span></div>
+                <textarea id="msgInput" class="input-msg" rows="2" placeholder="Mesaj yazın... (Enter: gönder · Shift+Enter: yeni satır)"></textarea>
+                <div class="msg-row">
+                    <button class="btn btn-sm btn-green" id="btnSendMsg">📢 Göster</button>
+                    <button class="btn btn-sm btn-danger-outline" id="btnClearMsg">🚫 Gizle</button>
+                    <button class="btn btn-sm btn-warn" id="btnFlashMsg" title="Basılı tut: ekran yanıp söner">⚡ Flash</button>
+                </div>
+                <div class="msg-size-row">
+                    <span class="msg-size-label">Boyut</span>
+                    <input type="range" id="msgSize" min="1" max="6" step="0.1" value="1" class="msg-size-slider" title="Sanatçı ekranındaki mesaj boyutu (sağa: hem yazı hem bar büyür)" />
+                    <span id="msgSizeVal" class="msg-size-val">1.0×</span>
+                </div>
+            </div>
+
+            <!-- Shortcuts -->
+            <div class="ctrl-box">
+                <div class="ctrl-label">Kısayollar</div>
+                <div class="sc-grid">
+                    <div class="sc"><kbd>←</kbd><span>Önceki Sayfa</span></div>
+                    <div class="sc"><kbd>→</kbd><span>Sonraki Sayfa</span></div>
+                    <div class="sc"><kbd>Ctrl+S</kbd><span>Kaydet (editörde)</span></div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ===== CHRONO BAR ===== -->
+    <footer class="chrono">
+        <div class="chrono-l">
+            <div class="chrono-time" id="chronoTime">00:00:00<span class="chrono-ms">.000</span></div>
+            <div class="chrono-btns">
+                <button class="ch-btn ch-start" id="chStart">▶ Başlat</button>
+                <button class="ch-btn ch-stop" id="chStop" disabled>⏸ Durdur</button>
+                <button class="ch-btn ch-reset" id="chReset">↺ Sıfırla</button>
+            </div>
+        </div>
+        <div class="chrono-c" id="nextInfo">
+            <div class="next-label">Sıradaki</div>
+            <div class="next-title" id="nextTitle">—</div>
+            <div class="next-key" id="nextKey"></div>
+        </div>
+        <div class="chrono-r">
+            <div class="laps" id="laps"></div>
+            <button class="ch-btn ch-lap" id="chLap" disabled>⏱ Tur</button>
+        </div>
+    </footer>
+
+    <input type="file" id="fileIn" accept=".json,.txt" style="display:none" />
+
+    <!-- it.17.6: Backup modal -->
+    <div class="modal-backdrop" id="backupModal" hidden>
+        <div class="modal modal-backup">
+            <div class="modal-head">
+                <h3>📁 Yedekler</h3>
+                <button class="btn btn-icon" id="btnBackupClose" title="Kapat">✕</button>
+            </div>
+            <div class="backup-toolbar">
+                <button class="btn btn-sm btn-outline" id="btnBackupConnect" title="Backup klasörünü bağla / değiştir">📂 Klasör Seç</button>
+                <button class="btn btn-sm btn-outline" id="btnBackupSaveNow">💾 Şimdi Yedekle</button>
+                <button class="btn btn-sm btn-outline" id="btnBackupRefresh">🔄 Yenile</button>
+                <span class="backup-info" id="backupInfo">—</span>
+            </div>
+            <div class="backup-list" id="backupList">
+                <div class="backup-empty">Yedek bulunmadı.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/songs-bundle.js?v=16"></script>
+    <script src="js/storage.js?v=17.6"></script>
+    <script src="js/app.js?v=17.6"></script>
+</body>
+</html>

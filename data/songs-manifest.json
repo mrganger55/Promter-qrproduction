@@ -1,0 +1,366 @@
+{
+  "count": 45,
+  "songs": [
+    {
+      "title": "14 BAHAR",
+      "filename": "14_bahar.txt",
+      "key": "EM-Sİ",
+      "lines": 33,
+      "chars": 789,
+      "pageCount": 6
+    },
+    {
+      "title": "AH GECELER",
+      "filename": "ah_geceler.txt",
+      "key": "GM-RE",
+      "lines": 36,
+      "chars": 680,
+      "pageCount": 7
+    },
+    {
+      "title": "AKŞAM GÜNEŞİ",
+      "filename": "aksam_gunesi.txt",
+      "key": "",
+      "lines": 29,
+      "chars": 423,
+      "pageCount": 6
+    },
+    {
+      "title": "ALLAHIM NEYDİ GÜNAHIM",
+      "filename": "allahim_neydi_gunahim.txt",
+      "key": "",
+      "lines": 26,
+      "chars": 728,
+      "pageCount": 5
+    },
+    {
+      "title": "ARA BENİ LÜTFEN",
+      "filename": "ara_beni_lutfen.txt",
+      "key": "",
+      "lines": 29,
+      "chars": 741,
+      "pageCount": 6
+    },
+    {
+      "title": "AY İNANMIYORUM",
+      "filename": "ay_inanmiyorum.txt",
+      "key": "",
+      "lines": 25,
+      "chars": 585,
+      "pageCount": 5
+    },
+    {
+      "title": "AŞKA YÜREK",
+      "filename": "aska_yurek.txt",
+      "key": "GM-RE",
+      "lines": 20,
+      "chars": 466,
+      "pageCount": 4
+    },
+    {
+      "title": "BEN ADAM OLMAM",
+      "filename": "ben_adam_olmam.txt",
+      "key": "EM-Sİ",
+      "lines": 39,
+      "chars": 1116,
+      "pageCount": 6
+    },
+    {
+      "title": "BEN GÜZELDEN ANLARIM",
+      "filename": "ben_guzelden_anlarim.txt",
+      "key": "",
+      "lines": 59,
+      "chars": 1305,
+      "pageCount": 9
+    },
+    {
+      "title": "BİN DEREDEN SU GETİRSEM",
+      "filename": "bin_dereden_su_getirsem.txt",
+      "key": "",
+      "lines": 20,
+      "chars": 706,
+      "pageCount": 4
+    },
+    {
+      "title": "BOŞVERE BOŞVERE",
+      "filename": "bosvere_bosvere.txt",
+      "key": "GM-RE",
+      "lines": 20,
+      "chars": 451,
+      "pageCount": 3
+    },
+    {
+      "title": "CEHENNEMİN DİBİ",
+      "filename": "cehennemin_dibi.txt",
+      "key": "",
+      "lines": 22,
+      "chars": 391,
+      "pageCount": 4
+    },
+    {
+      "title": "DELİKANLIM",
+      "filename": "delikanlim.txt",
+      "key": "",
+      "lines": 45,
+      "chars": 1275,
+      "pageCount": 9
+    },
+    {
+      "title": "DEĞER Mİ HİÇ",
+      "filename": "deger_mi_hic.txt",
+      "key": "",
+      "lines": 25,
+      "chars": 561,
+      "pageCount": 3
+    },
+    {
+      "title": "EMİ",
+      "filename": "emi.txt",
+      "key": "",
+      "lines": 33,
+      "chars": 629,
+      "pageCount": 7
+    },
+    {
+      "title": "GÖNÜL",
+      "filename": "gonul.txt",
+      "key": "AM-Mİ",
+      "lines": 33,
+      "chars": 669,
+      "pageCount": 6
+    },
+    {
+      "title": "HABERİ OLSUN",
+      "filename": "haberi_olsun.txt",
+      "key": "",
+      "lines": 27,
+      "chars": 492,
+      "pageCount": 5
+    },
+    {
+      "title": "HASTAYIM SANA",
+      "filename": "hastayim_sana.txt",
+      "key": "AM-Mİ",
+      "lines": 30,
+      "chars": 630,
+      "pageCount": 1
+    },
+    {
+      "title": "İÇİM YANAR",
+      "filename": "icim_yanar.txt",
+      "key": "",
+      "lines": 16,
+      "chars": 532,
+      "pageCount": 1
+    },
+    {
+      "title": "KADERİMİN OYUNU",
+      "filename": "kaderimin_oyunu.txt",
+      "key": "",
+      "lines": 25,
+      "chars": 668,
+      "pageCount": 1
+    },
+    {
+      "title": "KANDIRDIM\"",
+      "filename": "kandirdim.txt",
+      "key": "",
+      "lines": 31,
+      "chars": 717,
+      "pageCount": 1
+    },
+    {
+      "title": "KARABİBERİM",
+      "filename": "karabiberim.txt",
+      "key": "",
+      "lines": 17,
+      "chars": 422,
+      "pageCount": 1
+    },
+    {
+      "title": "KARALIM",
+      "filename": "karalim.txt",
+      "key": "AM-Mİ",
+      "lines": 14,
+      "chars": 334,
+      "pageCount": 1
+    },
+    {
+      "title": "KAÇ KADEH KIRILDI",
+      "filename": "kac_kadeh_kirildi.txt",
+      "key": "AM-Mİ",
+      "lines": 22,
+      "chars": 772,
+      "pageCount": 1
+    },
+    {
+      "title": "KAÇSAM GİTSEM",
+      "filename": "kacsam_gitsem.txt",
+      "key": "",
+      "lines": 14,
+      "chars": 350,
+      "pageCount": 1
+    },
+    {
+      "title": "LEYLİM LEY",
+      "filename": "leylim_ley.txt",
+      "key": "",
+      "lines": 38,
+      "chars": 664,
+      "pageCount": 1
+    },
+    {
+      "title": "NAMUS",
+      "filename": "namus.txt",
+      "key": "EM-Sİ",
+      "lines": 24,
+      "chars": 659,
+      "pageCount": 1
+    },
+    {
+      "title": "NE KAVGAM BİTTİ",
+      "filename": "ne_kavgam_bitti.txt",
+      "key": "",
+      "lines": 17,
+      "chars": 470,
+      "pageCount": 1
+    },
+    {
+      "title": "ODALARDA IŞIKSIZIM",
+      "filename": "odalarda_isiksizim.txt",
+      "key": "GM-RE",
+      "lines": 18,
+      "chars": 567,
+      "pageCount": 1
+    },
+    {
+      "title": "SAZ MI CAZ MI",
+      "filename": "saz_mi_caz_mi.txt",
+      "key": "GM-RE",
+      "lines": 40,
+      "chars": 995,
+      "pageCount": 1
+    },
+    {
+      "title": "SENİ İSTİYORUM",
+      "filename": "seni_istiyorum.txt",
+      "key": "",
+      "lines": 33,
+      "chars": 652,
+      "pageCount": 1
+    },
+    {
+      "title": "SENİ YAZDIM KALBİME",
+      "filename": "seni_yazdim_kalbime.txt",
+      "key": "",
+      "lines": 23,
+      "chars": 779,
+      "pageCount": 1
+    },
+    {
+      "title": "SENİ YERLER",
+      "filename": "seni_yerler.txt",
+      "key": "",
+      "lines": 34,
+      "chars": 1067,
+      "pageCount": 1
+    },
+    {
+      "title": "SENİNLE BAŞIM DERTTE",
+      "filename": "seninle_basim_dertte.txt",
+      "key": "",
+      "lines": 17,
+      "chars": 336,
+      "pageCount": 1
+    },
+    {
+      "title": "SEVME",
+      "filename": "sevme.txt",
+      "key": "AM-Mİ",
+      "lines": 32,
+      "chars": 911,
+      "pageCount": 1
+    },
+    {
+      "title": "SOR",
+      "filename": "sor.txt",
+      "key": "GM-RE",
+      "lines": 26,
+      "chars": 561,
+      "pageCount": 1
+    },
+    {
+      "title": "SULTAN SÜLEYMAN",
+      "filename": "sultan_suleyman.txt",
+      "key": "GM-RE",
+      "lines": 20,
+      "chars": 533,
+      "pageCount": 1
+    },
+    {
+      "title": "UMMADIĞIN ANDA",
+      "filename": "ummadigin_anda.txt",
+      "key": "GM",
+      "lines": 28,
+      "chars": 849,
+      "pageCount": 1
+    },
+    {
+      "title": "VUR GİTSİN BENİ",
+      "filename": "vur_gitsin_beni.txt",
+      "key": "",
+      "lines": 23,
+      "chars": 754,
+      "pageCount": 1
+    },
+    {
+      "title": "YANMIŞIM BEN",
+      "filename": "yanmisim_ben.txt",
+      "key": "GM-RE",
+      "lines": 32,
+      "chars": 806,
+      "pageCount": 1
+    },
+    {
+      "title": "YAPARIM BİLİRSİN",
+      "filename": "yaparim_bilirsin.txt",
+      "key": "",
+      "lines": 36,
+      "chars": 982,
+      "pageCount": 1
+    },
+    {
+      "title": "YIKILA YIKILA",
+      "filename": "yikila_yikila.txt",
+      "key": "AM-Mİ",
+      "lines": 22,
+      "chars": 687,
+      "pageCount": 1
+    },
+    {
+      "title": "YÜRÜ ANCA GİDERSİN",
+      "filename": "yuru_anca_gidersin.txt",
+      "key": "",
+      "lines": 33,
+      "chars": 1110,
+      "pageCount": 1
+    },
+    {
+      "title": "YÜZSÜZ YÜREK",
+      "filename": "yuzsuz_yurek.txt",
+      "key": "GM-RE",
+      "lines": 20,
+      "chars": 635,
+      "pageCount": 1
+    },
+    {
+      "title": "ŞAŞKIN",
+      "filename": "saskin.txt",
+      "key": "RE UŞAK",
+      "lines": 14,
+      "chars": 444,
+      "pageCount": 1
+    }
+  ],
+  "errors": []
+}

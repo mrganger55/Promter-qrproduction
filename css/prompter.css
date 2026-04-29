@@ -1,0 +1,686 @@
+/* ============================================
+   QR Production Prompter — Display Screen CSS
+   Elif Buse Dogan Concert Prompter
+   ============================================ */
+
+/* ---- CSS Variables ---- */
+:root {
+    --p-bg: #000;
+    --p-text: #fff;
+    --p-dim: rgba(255,255,255,0.18);
+    --p-dim-strong: rgba(255,255,255,0.45);
+    --p-dim-subtle: rgba(255,255,255,0.12);
+    --p-dim-faint: rgba(255,255,255,0.06);
+
+    /* Section colors */
+    --s-verse: #6366f1;
+    --s-chorus: #f59e0b;
+    --s-bridge: #06b6d4;
+    --s-intro: #22c55e;
+    --s-outro: #ef4444;
+    --s-solo: #ec4899;
+    --s-break: #8b5cf6;
+    --s-note: #64748b;
+
+    /* Guide line */
+    --guide-color: rgba(99,102,241,0.5);
+    --guide-width: 2px;
+    --guide-top: 38%;
+    --guide-glow-spread: 20px;
+
+    /* Info bar */
+    --ib-bg: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    --ib-brand-color: rgba(255,255,255,0.2);
+    --ib-song-color: rgba(255,255,255,0.45);
+    --ib-page-color: rgba(255,255,255,0.3);
+    --ib-chrono-color: rgba(99,102,241,0.7);
+    --ib-clock-color: rgba(255,255,255,0.25);
+    --ib-sep-color: rgba(255,255,255,0.1);
+
+    /* Next song */
+    --next-song-color: rgba(255,255,255,0.22);
+    --next-song-bg: rgba(255,255,255,0.03);
+
+    /* Message overlay */
+    --msg-bg: rgba(0,0,0,0.65);
+    --msg-text: #fff;
+    --msg-border: rgba(99,102,241,0.4);
+
+    /* Transition */
+    --page-transition: 0.2s ease;
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ---- Body ---- */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--p-bg);
+    color: var(--p-text);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    cursor: none;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.show-cursor {
+    cursor: default;
+}
+
+/* ============================================
+   THEMES
+   ============================================ */
+
+/* Light (studio) */
+body.theme-light {
+    --p-bg: #f0f0f0;
+    --p-text: #111;
+    --p-dim: rgba(0,0,0,0.12);
+    --p-dim-strong: rgba(0,0,0,0.45);
+    --p-dim-subtle: rgba(0,0,0,0.08);
+    --p-dim-faint: rgba(0,0,0,0.04);
+    --ib-bg: linear-gradient(to top, rgba(240,240,240,0.9), transparent);
+    --ib-brand-color: rgba(0,0,0,0.25);
+    --ib-song-color: rgba(0,0,0,0.45);
+    --ib-page-color: rgba(0,0,0,0.3);
+    --ib-chrono-color: rgba(99,102,241,0.8);
+    --ib-clock-color: rgba(0,0,0,0.25);
+    --ib-sep-color: rgba(0,0,0,0.08);
+    --next-song-color: rgba(0,0,0,0.2);
+    --next-song-bg: rgba(0,0,0,0.03);
+    --msg-bg: rgba(255,255,255,0.75);
+    --msg-text: #111;
+    --msg-border: rgba(99,102,241,0.3);
+    background: var(--p-bg);
+    color: var(--p-text);
+}
+
+/* High-contrast (yellow on black) */
+body.theme-high-contrast {
+    --p-bg: #000;
+    --p-text: #ffff00;
+    --p-dim: rgba(255,255,0,0.12);
+    --p-dim-strong: rgba(255,255,0,0.5);
+    --p-dim-subtle: rgba(255,255,0,0.08);
+    --p-dim-faint: rgba(255,255,0,0.04);
+    --guide-color: rgba(255,255,0,0.4);
+    --ib-bg: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    --ib-brand-color: rgba(255,255,0,0.2);
+    --ib-song-color: rgba(255,255,0,0.5);
+    --ib-page-color: rgba(255,255,0,0.35);
+    --ib-chrono-color: rgba(255,255,0,0.6);
+    --ib-clock-color: rgba(255,255,0,0.3);
+    --ib-sep-color: rgba(255,255,0,0.1);
+    --next-song-color: rgba(255,255,0,0.18);
+    --next-song-bg: rgba(255,255,0,0.03);
+    --msg-bg: rgba(0,0,0,0.8);
+    --msg-text: #ffff00;
+    --msg-border: rgba(255,255,0,0.3);
+    background: var(--p-bg);
+    color: var(--p-text);
+}
+
+/* ---- Mirror mode ---- */
+body.mirror {
+    transform: scaleX(-1);
+}
+
+/* ============================================
+   COUNTDOWN OVERLAY
+   ============================================ */
+.cd-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.96);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.cd-overlay.on {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cd-ring {
+    width: 180px;
+    height: 180px;
+    border: 3px solid rgba(99,102,241,0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: ring-pulse 1s ease infinite;
+}
+
+@keyframes ring-pulse {
+    0%, 100% { border-color: rgba(99,102,241,0.3); transform: scale(1); }
+    50% { border-color: rgba(99,102,241,0.8); transform: scale(1.04); }
+}
+
+.cd-num {
+    font-size: 110px;
+    font-weight: 800;
+    color: #6366f1;
+    line-height: 1;
+}
+
+.cd-text {
+    font-size: 18px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 20px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   MESSAGE BAR (bottom, above info bar)
+   ============================================ */
+/* it.17.5: Mesaj barı artık fixed → sözlerin üzerine biner; .page-area kıpırdamaz */
+.msg-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    flex-shrink: 0;
+    max-height: 0;
+    overflow: hidden;
+    background: rgba(15, 17, 30, 0.94);
+    border-top: 2px solid rgba(99,102,241,0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        max-height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity   0.35s ease 0.05s;
+}
+
+/* slider 1× → 30vh, 6× → 95vh (clamp) */
+.msg-bar.on {
+    max-height: min(95vh, calc(15vh + var(--msg-size, 1) * 15vh));
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Viewport — içerik taşarsa clip, yavaş kaydırmaya taban oluşturur */
+.msg-viewport {
+    overflow: hidden;
+    min-height: 100px;
+    max-height: min(95vh, calc(15vh + var(--msg-size, 1) * 15vh));
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.msg-inner {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: 92%;
+}
+
+/* When text overflows viewport, switch to continuous slow vertical scroll */
+.msg-bar.scrolling .msg-inner {
+    animation: msgScrollUp var(--msg-scroll-dur, 24s) linear infinite;
+    animation-delay: 0.7s;
+    transition: none;
+}
+@keyframes msgScrollUp {
+    0%   { transform: translateY(100%); }
+    100% { transform: translateY(-110%); }
+}
+
+.msg-icon {
+    font-size: calc(22px * var(--msg-size, 1));
+    flex-shrink: 0;
+    padding-top: 2px;
+    line-height: 1.2;
+    transition: font-size 0.15s ease;
+}
+
+.msg-text {
+    font-size: calc(22px * var(--msg-size, 1));
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
+    transition: font-size 0.15s ease;
+}
+
+/* it.17: Flash — operatör Flash butonuna basılı tuttukça yanıp söner */
+.msg-bar.flashing {
+    animation: msgFlash 0.45s linear infinite;
+}
+@keyframes msgFlash {
+    0%, 100% { background: rgba(99,102,241,0.15); }
+    50%      { background: rgba(255,255,255,0.55); }
+}
+
+body.theme-light .msg-bar {
+    background: rgba(99,102,241,0.1);
+    border-top-color: rgba(99,102,241,0.2);
+}
+body.theme-light .msg-text { color: #111; }
+
+body.theme-high-contrast .msg-bar {
+    background: rgba(255,255,0,0.1);
+    border-top-color: rgba(255,255,0,0.3);
+}
+body.theme-high-contrast .msg-text { color: #ffff00; }
+
+/* ============================================
+   READING GUIDE LINE
+   ============================================ */
+.guide-line {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    top: var(--guide-top);
+    height: var(--guide-width);
+    background: var(--guide-color);
+    z-index: 80;
+    pointer-events: none;
+    transition: top 0.3s ease, height 0.15s ease, background 0.15s ease;
+}
+
+.guide-line.hidden {
+    display: none;
+}
+
+/* Guide glow - top */
+.guide-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: calc(-1 * var(--guide-glow-spread));
+    height: var(--guide-glow-spread);
+    background: linear-gradient(to bottom, transparent, var(--guide-color));
+    opacity: 0.3;
+}
+
+/* Guide glow - bottom */
+.guide-line::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    bottom: calc(-1 * var(--guide-glow-spread));
+    height: var(--guide-glow-spread);
+    background: linear-gradient(to top, transparent, var(--guide-color));
+    opacity: 0.3;
+}
+
+/* Arrow markers on guide */
+.guide-arrow-l,
+.guide-arrow-r {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+}
+
+.guide-arrow-l {
+    left: 12px;
+    border-right: 8px solid var(--guide-color);
+}
+
+.guide-arrow-r {
+    right: 12px;
+    border-left: 8px solid var(--guide-color);
+}
+
+/* ============================================
+   PAGE AREA
+   ============================================ */
+.page-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 5%;
+    overflow: hidden;
+}
+
+.page-box {
+    width: 100%;
+    text-align: center;
+    transition: opacity var(--page-transition), transform var(--page-transition);
+}
+
+/* Page transition: out */
+.page-box.out {
+    opacity: 0;
+    transform: translateY(-16px);
+}
+
+/* Page transition: in */
+.page-box.in {
+    animation: pageIn 0.25s ease forwards;
+}
+
+@keyframes pageIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Lyric lines — all uppercase, Turkish-aware via lang="tr" on <html> */
+.page-box .line {
+    font-weight: 500;
+    line-height: 1.7;
+    padding: 2px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-transform: uppercase;
+}
+
+.page-box .line.empty {
+    height: 0.5em;
+}
+
+/* Section markers */
+.page-box .section-marker {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    padding: 10px 0 4px;
+    opacity: 0.7;
+}
+
+.section-marker.verse   { color: var(--s-verse); }
+.section-marker.chorus  { color: var(--s-chorus); }
+.section-marker.bridge  { color: var(--s-bridge); }
+.section-marker.intro   { color: var(--s-intro); }
+.section-marker.outro   { color: var(--s-outro); }
+.section-marker.solo    { color: var(--s-solo); }
+.section-marker.break   { color: var(--s-break); }
+.section-marker.note    { color: var(--s-note); font-style: italic; }
+
+body.no-section-colors .section-marker {
+    color: var(--p-dim) !important;
+}
+
+/* Wait/idle state */
+.wait-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 2px;
+}
+
+.wait-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.12);
+    margin-top: 10px;
+}
+
+body.theme-light .wait-title { color: rgba(0,0,0,0.18); }
+body.theme-light .wait-sub   { color: rgba(0,0,0,0.1); }
+body.theme-high-contrast .wait-title { color: rgba(255,255,0,0.25); }
+body.theme-high-contrast .wait-sub   { color: rgba(255,255,0,0.12); }
+
+/* ============================================
+   PAGE DOTS
+   ============================================ */
+.dots {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+body.show-cursor .dots,
+body:hover .dots {
+    opacity: 1;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--p-dim);
+    transition: all 0.2s;
+}
+
+.dot.on {
+    background: #6366f1;
+    transform: scale(1.5);
+    box-shadow: 0 0 6px rgba(99,102,241,0.5);
+}
+
+body.theme-high-contrast .dot.on {
+    background: #ffff00;
+    box-shadow: 0 0 6px rgba(255,255,0,0.4);
+}
+
+/* ============================================
+   TOP / BOTTOM BARS
+   ============================================ */
+:root {
+    --ib-size: 18px;       /* adjustable via control panel */
+    --ib-opacity: 0.9;     /* adjustable via control panel */
+}
+
+/* ---- TOP: brand | current song (center, prominent) | page ---- */
+.top-bar {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content;
+    align-items: center;
+    gap: 14px;
+    padding: calc(var(--ib-size) * 0.5) calc(var(--ib-size) * 1.2);
+    min-height: calc(var(--ib-size) * 2.4);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.92), rgba(0,0,0,0.4));
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    opacity: var(--ib-opacity);
+    transition: opacity 0.4s;
+}
+body.show-cursor .top-bar { opacity: 1; }
+
+.tb-brand {
+    font-size: calc(var(--ib-size) * 0.7);
+    font-weight: 700;
+    color: rgba(255,255,255,0.28);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+.tb-song {
+    font-size: calc(var(--ib-size) * 1.35);
+    font-weight: 800;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tb-page {
+    font-size: calc(var(--ib-size) * 0.95);
+    color: rgba(255,255,255,0.55);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---- BOTTOM: empty | next song (center, prominent) | chrono (right) ---- */
+.bottom-bar {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content;
+    align-items: center;
+    gap: 14px;
+    padding: calc(var(--ib-size) * 0.5) calc(var(--ib-size) * 1.2);
+    min-height: calc(var(--ib-size) * 2.4);
+    background: linear-gradient(to top, rgba(0,0,0,0.92), rgba(0,0,0,0.4));
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+    opacity: var(--ib-opacity);
+    transition: opacity 0.4s;
+}
+body.show-cursor .bottom-bar { opacity: 1; }
+
+.bb-spacer {
+    min-width: calc(var(--ib-size) * 6);
+}
+.bb-next {
+    font-size: calc(var(--ib-size) * 1.1);
+    font-weight: 700;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s;
+}
+.bb-next.has {
+    color: rgba(147,197,253,0.9);  /* softer accent when a next song is set */
+}
+.bb-chrono {
+    font-size: calc(var(--ib-size) * 1.3);
+    font-weight: 800;
+    color: rgba(99,102,241,0.85);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: 0.5px;
+    min-width: calc(var(--ib-size) * 6);
+    text-align: right;
+}
+.bb-chrono.hidden { visibility: hidden; }
+
+/* ---- Theme variants ---- */
+body.theme-light .top-bar,
+body.theme-light .bottom-bar {
+    background: linear-gradient(to bottom, rgba(240,240,240,0.95), rgba(240,240,240,0.5));
+    border-color: rgba(0,0,0,0.08);
+}
+body.theme-light .bottom-bar {
+    background: linear-gradient(to top, rgba(240,240,240,0.95), rgba(240,240,240,0.5));
+}
+body.theme-light .tb-brand { color: rgba(0,0,0,0.35); }
+body.theme-light .tb-song { color: rgba(0,0,0,0.85); }
+body.theme-light .tb-page { color: rgba(0,0,0,0.5); }
+body.theme-light .bb-next { color: rgba(0,0,0,0.4); }
+body.theme-light .bb-next.has { color: rgba(99,102,241,0.85); }
+body.theme-light .bb-chrono { color: rgba(99,102,241,0.9); }
+
+body.theme-high-contrast .tb-song { color: #ffff00; }
+body.theme-high-contrast .tb-brand,
+body.theme-high-contrast .tb-page,
+body.theme-high-contrast .bb-next { color: rgba(255,255,0,0.55); }
+body.theme-high-contrast .bb-chrono { color: rgba(255,255,0,0.9); }
+
+/* ============================================
+   HINT
+   ============================================ */
+.hint {
+    position: fixed;
+    bottom: 76px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 18px;
+    background: rgba(99,102,241,0.85);
+    color: #fff;
+    font-size: 12px;
+    border-radius: 6px;
+    z-index: 200;
+    transition: opacity 0.5s;
+    white-space: nowrap;
+}
+
+.hint kbd {
+    display: inline;
+    padding: 1px 4px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 10px;
+}
+
+.hint.off {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============================================
+   HIDDEN MEASURER
+   ============================================ */
+.measurer {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    visibility: hidden;
+    padding: 30px 5%;
+    width: 100vw;
+    text-align: center;
+}
+
+.measurer .line {
+    font-weight: 500;
+    line-height: 1.7;
+    padding: 2px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.measurer .line.empty {
+    height: 0.5em;
+}
+
+.measurer .section-marker {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    padding: 10px 0 4px;
+}
+
+/* ============================================
+   SCROLLBAR (hidden)
+   ============================================ */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* ============================================
+   SELECTION (disabled look)
+   ============================================ */
+::selection {
+    background: transparent;
+}

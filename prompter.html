@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Production Prompter</title>
+    <link rel="stylesheet" href="css/prompter.css?v=17.5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Countdown -->
+    <div class="cd-overlay" id="cdOverlay">
+        <div class="cd-ring"><div class="cd-num" id="cdNum">5</div></div>
+        <div class="cd-text">Başlıyor...</div>
+    </div>
+
+    <!-- Reading Guide Line -->
+    <div class="guide-line" id="guideLine">
+        <span class="guide-arrow-l"></span>
+        <span class="guide-arrow-r"></span>
+    </div>
+
+    <!-- TOP Info Bar: current song + key + page -->
+    <div class="top-bar" id="topBar">
+        <span class="tb-brand">QR Production</span>
+        <span class="tb-song" id="ibSong">&mdash;</span>
+        <span class="tb-page" id="ibPage">&mdash; / &mdash;</span>
+    </div>
+
+    <!-- Page Area -->
+    <div class="page-area" id="pageArea">
+        <div class="page-box" id="pageBox">
+            <p class="wait-title">QR Production Prompter</p>
+            <p class="wait-sub">Kontrol panelinden metin gönderin</p>
+        </div>
+    </div>
+
+    <!-- Page Dots -->
+    <div class="dots" id="dots"></div>
+
+    <!-- Message Bar (operator messages - above bottom bar) -->
+    <div class="msg-bar" id="msgBar">
+        <div class="msg-viewport" id="msgViewport">
+            <div class="msg-inner" id="msgInner">
+                <span class="msg-icon">💬</span>
+                <span class="msg-text" id="msgText"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM Bar: next song centered + chrono right -->
+    <div class="bottom-bar" id="bottomBar">
+        <span class="bb-spacer"></span>
+        <span class="bb-next" id="ibNext">&mdash;</span>
+        <span class="bb-chrono" id="ibChrono">00:00:00</span>
+    </div>
+
+    <!-- Hint -->
+    <div class="hint" id="hint">
+        Tam ekran: çift tıklayın veya <kbd>F</kbd> &nbsp;|&nbsp; Kapat: <kbd>Esc</kbd>
+    </div>
+
+    <!-- Hidden measurer -->
+    <div class="measurer" id="measurer"></div>
+
+    <script>
+    /* ============================================
+       QR Production Prompter — Display Engine
+       ============================================ */
+    (function () {
+        'use strict';
+
+        const PROMPTER_VERSION = 'v17.5 — ' + new Date().toISOString().slice(0, 10);
+        console.log('%c[QR Prompter] ' + PROMPTER_VERSION, 'background:#6366f1;color:#fff;padding:2px 6px;border-radius:3px;font-weight:bold');
+
+        const ch = new BroadcastChannel('qr-prompter');
+        const $ = s => document.querySelector(s);
+
+        const dom = {
+            body: document.body,
+            cdOverlay: $('#cdOverlay'),
+            cdNum: $('#cdNum'),
+            msgBar: $('#msgBar'),
+            msgText: $('#msgText'),
+            msgViewport: $('#msgViewport'),
+            msgInner: $('#msgInner'),
+            guideLine: $('#guideLine'),
+            pageArea: $('#pageArea'),
+            pageBox: $('#pageBox'),
+            dots: $('#dots'),
+            topBar: $('#topBar'),
+            bottomBar: $('#bottomBar'),
+            ibSong: $('#ibSong'),
+            ibPage: $('#ibPage'),
+            ibNext: $('#ibNext'),
+            ibChrono: $('#ibChrono'),
+            hint: $('#hint'),
+            measurer: $('#measurer'),
+        };
+
+        // ---- State ----
+        let pages = [];
+        let currentPage = 0;
+        let totalPages = 0;
+        let allLines = [];
+        let fontMin = 32;
+        let fontMax = 72;
+        let cursorTimer = null;
+        let msgTimer = null;
+
+        // Chrono state (local mirror of control panel chrono)
+        let chronoRunning = false;
+        let chronoBase = 0;      // Date.now() when started
+        let chronoElapsed = 0;   // accumulated ms
+        let chronoRAF = null;
+
+        const SECTION_RE = /^\[(VERSE|CHORUS|BRIDGE|INTRO|OUTRO|SOLO|BREAK|NOTE)\]$/i;
+        // Explicit page break: --- or === (3+ dashes/equals on their own line), or [PAGE]
+        const PAGEBREAK_RE = /^(?:-{3,}|={3,}|\[PAGE\])$/i;
+
+        // ---- Chrono Display ----
+        function fmtChrono(ms) {
+            const h = Math.floor(ms / 3600000);
+            const m = Math.floor((ms % 3600000) / 60000);
+            const s = Math.floor((ms % 60000) / 1000);
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        function chronoTick() {
+            if (!chronoRunning) return;
+            chronoElapsed = Date.now() - chronoBase;
+            dom.ibChrono.textContent = fmtChrono(chronoElapsed);
+            chronoRAF = requestAnimationFrame(chronoTick);
+        }
+
+        function chronoStart() {
+            if (chronoRunning) return;
+            chronoRunning = true;
+            chronoBase = Date.now() - chronoElapsed;
+            chronoTick();
+        }
+
+        function chronoStop() {
+            chronoRunning = false;
+            if (chronoRAF) cancelAnimationFrame(chronoRAF);
+        }
+
+        function chronoReset() {
+            chronoStop();
+            chronoElapsed = 0;
+            dom.ibChrono.textContent = '00:00:00';
+        }
+
+        function chronoSync(data) {
+            // Sync from control panel: { running, elapsed }
+            if (data.elapsed !== undefined) chronoElapsed = data.elapsed;
+            if (data.running) {
+                chronoBase = Date.now() - chronoElapsed;
+                if (!chronoRunning) { chronoRunning = true; chronoTick(); }
+            } else {
+                chronoStop();
+                dom.ibChrono.textContent = fmtChrono(chronoElapsed);
+            }
+        }
+
+        // ---- Cursor auto-hide ----
+        document.addEventListener('mousemove', () => {
+            dom.body.classList.add('show-cursor');
+            clearTimeout(cursorTimer);
+            cursorTimer = setTimeout(() => dom.body.classList.remove('show-cursor'), 3000);
+        });
+
+        // ---- Hint ----
+        setTimeout(() => dom.hint.classList.add('off'), 5000);
+
+        // ---- Fullscreen ----
+        function toggleFS() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else document.exitFullscreen().catch(() => {});
+        }
+        document.addEventListener('dblclick', toggleFS);
+
+        // ---- Message Overlay ----
+        // duration === 0 → manuel kaldırılana kadar kalır
+        // duration > 0   → o kadar ms sonra otomatik gizlenir
+        // duration yok   → varsayılan 5000 ms
+        // Mesaj barı açılınca .page-area küçülür → lyrics otomatik yeniden paginate edilir
+        function repaginateSafe() {
+            try {
+                if (typeof paginate === 'function' && allLines && allLines.length) {
+                    paginate();
+                    if (totalPages > 0) renderPage(currentPage, false);
+                }
+            } catch (_) {}
+        }
+
+        function onMsgBarTransitionEnd(e) {
+            if (e.propertyName !== 'max-height') return;
+            dom.msgBar.removeEventListener('transitionend', onMsgBarTransitionEnd);
+
+            // Bar tam açıldı → taşma ölçümü + kaydırma kararı
+            if (dom.msgBar.classList.contains('on')) {
+                var innerH = dom.msgInner ? dom.msgInner.scrollHeight : 0;
+                var vpH    = dom.msgViewport ? dom.msgViewport.clientHeight : 0;
+                if (innerH > vpH) {
+                    var total = innerH + vpH;
+                    var pxPerSec = 45;
+                    var dur = Math.max(14, total / pxPerSec);
+                    dom.msgBar.style.setProperty('--msg-scroll-dur', dur + 's');
+                    dom.msgBar.classList.add('scrolling');
+                }
+            }
+            // Her iki yönde de: lyrics alanı boyutu değişti → yeniden paginate
+            repaginateSafe();
+        }
+
+        function showMessage(text, duration) {
+            if (duration === undefined || duration === null) duration = 5000;
+            dom.msgText.textContent = text;
+            // Reset classes so expansion animation & scroll measurement fire cleanly
+            dom.msgBar.classList.remove('scrolling');
+            dom.msgBar.removeEventListener('transitionend', onMsgBarTransitionEnd);
+            dom.msgBar.addEventListener('transitionend', onMsgBarTransitionEnd);
+            // Force reflow so max-height transition starts from current state
+            void dom.msgBar.offsetHeight;
+            dom.msgBar.classList.add('on');
+            clearTimeout(msgTimer);
+            msgTimer = null;
+
+            if (duration > 0) {
+                msgTimer = setTimeout(function() {
+                    clearMessage();
+                }, duration);
+            }
+        }
+
+        function clearMessage() {
+            clearTimeout(msgTimer);
+            dom.msgBar.classList.remove('scrolling');
+            dom.msgBar.removeEventListener('transitionend', onMsgBarTransitionEnd);
+            dom.msgBar.addEventListener('transitionend', onMsgBarTransitionEnd);
+            dom.msgBar.classList.remove('on');
+        }
+
+        // ---- Next Song (bottom center) ----
+        function setNextSong(title, key) {
+            if (!title) {
+                dom.ibNext.textContent = '—';
+                dom.ibNext.classList.remove('has');
+                return;
+            }
+            let txt = 'Sıradaki: ' + title;
+            if (key) txt += ' \u2014 ' + key;
+            dom.ibNext.textContent = txt;
+            dom.ibNext.classList.add('has');
+        }
+
+        // ============================================================
+        //  TEXT PARSING
+        // ============================================================
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        function parseLines(rawText) {
+            return rawText.split('\n').map(line => {
+                const t = line.trim();
+                if (PAGEBREAK_RE.test(t)) return { type: 'pagebreak', text: '' };
+                const m = t.match(SECTION_RE);
+                if (m) return { type: 'section', text: t, sectionClass: m[1].toLowerCase() };
+                if (t === '') return { type: 'empty', text: '' };
+                return { type: 'line', text: t };
+            });
+        }
+
+        function lineToHtml(ln) {
+            if (ln.type === 'section') return '<div class="section-marker ' + ln.sectionClass + '">' + esc(ln.text) + '</div>';
+            if (ln.type === 'empty') return '<div class="line empty"></div>';
+            return '<div class="line">' + esc(ln.text) + '</div>';
+        }
+
+        // ============================================================
+        //  AUTO-FIT PAGINATION ENGINE
+        // ============================================================
+        function getAvailableHeight() {
+            return dom.pageArea.clientHeight - 60;
+        }
+
+        function getAvailableWidth() {
+            return dom.pageArea.clientWidth * 0.9;
+        }
+
+        function measureBlock(lines, fontSize) {
+            const m = dom.measurer;
+            m.style.width = getAvailableWidth() + 'px';
+
+            let html = '';
+            for (const ln of lines) {
+                if (ln.type === 'section') {
+                    const secSize = Math.max(14, Math.round(fontSize * 0.35));
+                    html += '<div class="section-marker" style="font-size:' + secSize + 'px;font-weight:700;text-transform:uppercase;letter-spacing:4px;padding:' + Math.round(fontSize * 0.15) + 'px 0 ' + Math.round(fontSize * 0.06) + 'px">' + esc(ln.text) + '</div>';
+                } else if (ln.type === 'empty') {
+                    html += '<div class="line empty" style="height:' + Math.round(fontSize * 0.3) + 'px"></div>';
+                } else {
+                    html += '<div class="line" style="font-size:' + fontSize + 'px;line-height:1.7;font-weight:500;word-wrap:break-word;overflow-wrap:break-word;padding:2px 0">' + esc(ln.text) + '</div>';
+                }
+            }
+            m.innerHTML = html;
+            return m.scrollHeight;
+        }
+
+        // Split lines into forced sections by pagebreak markers
+        function splitByPageBreaks(lines) {
+            const sections = [];
+            let current = [];
+            for (const ln of lines) {
+                if (ln.type === 'pagebreak') {
+                    if (current.length) sections.push(current);
+                    current = [];
+                } else {
+                    current.push(ln);
+                }
+            }
+            if (current.length) sections.push(current);
+            return sections;
+        }
+
+        // Auto-paginate a single section (splits further only if it doesn't fit)
+        function paginateSection(sectionLines, availH) {
+            // Trim leading/trailing empties
+            let lines = sectionLines.slice();
+            while (lines.length && lines[0].type === 'empty') lines.shift();
+            while (lines.length && lines[lines.length - 1].type === 'empty') lines.pop();
+            if (!lines.length) return [];
+
+            const out = [];
+            let cursor = 0;
+
+            while (cursor < lines.length) {
+                let bestEnd = cursor + 1;
+                let bestFont = fontMax;
+                let found = false;
+
+                for (let end = lines.length; end > cursor; end--) {
+                    const slice = lines.slice(cursor, end);
+                    if (slice.every(l => l.type === 'empty')) continue;
+
+                    let lo = fontMin, hi = fontMax, fit = 0;
+                    const hMin = measureBlock(slice, lo);
+                    if (hMin > availH) continue;
+
+                    while (lo <= hi) {
+                        const mid = Math.round((lo + hi) / 2);
+                        const h = measureBlock(slice, mid);
+                        if (h <= availH) { fit = mid; lo = mid + 1; }
+                        else { hi = mid - 1; }
+                    }
+
+                    if (fit >= fontMin) {
+                        bestEnd = end; bestFont = fit; found = true; break;
+                    }
+                }
+
+                if (!found) { bestEnd = cursor + 1; bestFont = fontMin; }
+
+                const pageLines = lines.slice(cursor, bestEnd);
+                while (pageLines.length && pageLines[0].type === 'empty') { pageLines.shift(); cursor++; }
+                while (pageLines.length && pageLines[pageLines.length - 1].type === 'empty') { pageLines.pop(); bestEnd--; }
+                if (pageLines.length === 0) { cursor++; continue; }
+
+                out.push({ lines: pageLines, fontSize: bestFont });
+                cursor = bestEnd;
+                while (cursor < lines.length && lines[cursor].type === 'empty') cursor++;
+            }
+            return out;
+        }
+
+        function paginate() {
+            pages = [];
+            if (!allLines.length) {
+                totalPages = 0;
+                currentPage = 0;
+                renderDots();
+                return;
+            }
+
+            const availH = getAvailableHeight();
+
+            // Step 1: split into forced sections by "---"/"[PAGE]" markers
+            const sections = splitByPageBreaks(allLines);
+
+            // Step 2: each forced section becomes one OR MORE pages (auto-split if doesn't fit)
+            for (const sec of sections) {
+                const secPages = paginateSection(sec, availH);
+                for (const p of secPages) pages.push(p);
+            }
+
+            totalPages = pages.length;
+            if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
+
+            renderDots();
+            reportPages();
+        }
+
+        // ============================================================
+        //  RENDERING
+        // ============================================================
+        function renderPage(index, animate) {
+            if (index < 0 || index >= totalPages) return;
+            currentPage = index;
+
+            const page = pages[currentPage];
+
+            if (animate) {
+                dom.pageBox.classList.add('out');
+                setTimeout(function() {
+                    applyPage(page);
+                    dom.pageBox.classList.remove('out');
+                    dom.pageBox.classList.add('in');
+                    setTimeout(function() { dom.pageBox.classList.remove('in'); }, 260);
+                }, 200);
+            } else {
+                applyPage(page);
+            }
+
+            dom.ibPage.textContent = 'Sayfa ' + (currentPage + 1) + ' / ' + totalPages;
+            renderDots();
+            reportCurrentPage();
+        }
+
+        function applyPage(page) {
+            let html = '';
+            const fs = page.fontSize;
+
+            for (const ln of page.lines) {
+                if (ln.type === 'section') {
+                    const secSize = Math.max(14, Math.round(fs * 0.35));
+                    html += '<div class="section-marker ' + ln.sectionClass + '" style="font-size:' + secSize + 'px">' + esc(ln.text) + '</div>';
+                } else if (ln.type === 'empty') {
+                    html += '<div class="line empty" style="height:' + Math.round(fs * 0.3) + 'px"></div>';
+                } else {
+                    html += '<div class="line" style="font-size:' + fs + 'px;line-height:1.7">' + esc(ln.text) + '</div>';
+                }
+            }
+
+            dom.pageBox.innerHTML = html;
+        }
+
+        function renderDots() {
+            if (totalPages <= 1) { dom.dots.innerHTML = ''; return; }
+            const max = Math.min(totalPages, 30);
+            let h = '';
+            for (let i = 0; i < max; i++) {
+                h += '<div class="dot ' + (i === currentPage ? 'on' : '') + '"></div>';
+            }
+            dom.dots.innerHTML = h;
+        }
+
+        // ============================================================
+        //  CONTROL PANEL COMMUNICATION
+        // ============================================================
+        function reportPages() {
+            ch.postMessage({ type: 'pagesReady', data: { total: totalPages, current: currentPage + 1 } });
+        }
+
+        function reportCurrentPage() {
+            ch.postMessage({ type: 'pageChanged', data: { page: currentPage + 1, total: totalPages } });
+        }
+
+        function applySettings(s) {
+            if (s.mirrorMode !== undefined) dom.body.classList.toggle('mirror', s.mirrorMode);
+            if (s.sectionColors !== undefined) dom.body.classList.toggle('no-section-colors', !s.sectionColors);
+            if (s.theme !== undefined) {
+                dom.body.classList.remove('theme-light', 'theme-high-contrast');
+                if (s.theme === 'light') dom.body.classList.add('theme-light');
+                else if (s.theme === 'high-contrast') dom.body.classList.add('theme-high-contrast');
+            }
+            if (s.guideVisible !== undefined) dom.guideLine.classList.toggle('hidden', !s.guideVisible);
+            if (s.guidePos !== undefined) dom.guideLine.style.setProperty('--guide-top', s.guidePos + '%');
+            if (s.guideWidth !== undefined) dom.guideLine.style.setProperty('--guide-width', s.guideWidth + 'px');
+            if (s.guideColor !== undefined) dom.guideLine.style.setProperty('--guide-color', s.guideColor);
+            if (s.fontMin !== undefined) fontMin = s.fontMin;
+            if (s.fontMax !== undefined) fontMax = s.fontMax;
+            // Info bar size + opacity (live)
+            if (s.ibSize !== undefined) document.documentElement.style.setProperty('--ib-size', s.ibSize + 'px');
+            if (s.ibOpacity !== undefined) document.documentElement.style.setProperty('--ib-opacity', (s.ibOpacity / 100).toFixed(2));
+            if (s.ibShowChrono !== undefined) dom.ibChrono.classList.toggle('hidden', !s.ibShowChrono);
+            // it.17: mesaj boyut çarpanı (init sırasında da uygulanır)
+            if (s.msgSize !== undefined) dom.msgBar.style.setProperty('--msg-size', String(s.msgSize));
+        }
+
+        // ---- Countdown ----
+        function countdown(sec) {
+            dom.cdOverlay.classList.add('on');
+            let r = sec;
+            dom.cdNum.textContent = r;
+            const iv = setInterval(function() {
+                r--;
+                if (r <= 0) { clearInterval(iv); dom.cdOverlay.classList.remove('on'); }
+                else dom.cdNum.textContent = r;
+            }, 1000);
+        }
+
+        // ---- Receive messages ----
+        ch.onmessage = function(evt) {
+            const type = evt.data.type;
+            const data = evt.data.data;
+
+            switch (type) {
+                case 'init':
+                    applySettings(data);
+                    break;
+
+                case 'loadText': {
+                    allLines = parseLines(data.text);
+                    // Build song display: title + key
+                    let songDisplay = data.songTitle || '\u2014';
+                    const songKey = data.songKey || data.key || '';
+                    if (songKey) songDisplay += ' \u2014 ' + songKey;
+                    dom.ibSong.textContent = songDisplay;
+                    // Update next song info
+                    if (data.nextSong) setNextSong(data.nextSong, data.nextKey || '');
+                    else setNextSong('', '');
+                    paginate();
+                    if (totalPages > 0) renderPage(0, false);
+                    break;
+                }
+
+                case 'goPage':
+                    renderPage(data.page - 1, true);
+                    break;
+
+                case 'nextPage':
+                    if (currentPage < totalPages - 1) renderPage(currentPage + 1, true);
+                    break;
+
+                case 'prevPage':
+                    if (currentPage > 0) renderPage(currentPage - 1, true);
+                    break;
+
+                case 'firstPage':
+                    renderPage(0, true);
+                    break;
+
+                case 'lastPage':
+                    renderPage(totalPages - 1, true);
+                    break;
+
+                case 'updateSettings':
+                    applySettings(data);
+                    if (data.fontMin !== undefined || data.fontMax !== undefined) {
+                        paginate();
+                        if (totalPages > 0) renderPage(currentPage, false);
+                    }
+                    break;
+
+                case 'countdown':
+                    countdown(data.seconds);
+                    break;
+
+                case 'toggleFullscreen':
+                    toggleFS();
+                    break;
+
+                case 'autoFullscreen':
+                    document.documentElement.requestFullscreen().catch(function() {});
+                    setTimeout(function() {
+                        paginate();
+                        if (totalPages > 0) renderPage(currentPage, false);
+                    }, 500);
+                    break;
+
+                // -- New message types --
+                case 'chronoSync':
+                    chronoSync(data);
+                    break;
+
+                case 'chronoStart':
+                    chronoStart();
+                    break;
+
+                case 'chronoStop':
+                    chronoStop();
+                    break;
+
+                case 'chronoReset':
+                    chronoReset();
+                    break;
+
+                case 'message':
+                case 'showMessage':
+                    showMessage(data.text, data.duration * 1000);
+                    break;
+
+                case 'clearMessage':
+                    clearMessage();
+                    break;
+
+                case 'flashMessage':
+                    // it.17: operatör Flash butonuna basılı tuttukça yanıp söner
+                    if (data && data.on) dom.msgBar.classList.add('flashing');
+                    else dom.msgBar.classList.remove('flashing');
+                    break;
+
+                case 'setMessageSize':
+                    // it.17: mesaj font boyut çarpanı (1.0–3.0)
+                    if (data && typeof data.scale === 'number') {
+                        dom.msgBar.style.setProperty('--msg-size', String(data.scale));
+                    }
+                    break;
+
+                case 'nextSong':
+                    setNextSong(data.title, data.key);
+                    break;
+            }
+        };
+
+        // ---- Resize handler ----
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (allLines.length) {
+                    paginate();
+                    if (totalPages > 0) renderPage(currentPage, false);
+                }
+            }, 300);
+        });
+
+        // ---- Fullscreen change ----
+        document.addEventListener('fullscreenchange', function() {
+            setTimeout(function() {
+                if (allLines.length) {
+                    paginate();
+                    if (totalPages > 0) renderPage(currentPage, false);
+                }
+            }, 400);
+        });
+
+        // ---- Keyboard — sayfa geçişi + ESC ile kapat ----
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentPage > 0) renderPage(currentPage - 1, true);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentPage < totalPages - 1) renderPage(currentPage + 1, true);
+            } else if (e.key === 'Escape') {
+                // Two-step: if fullscreen, exit FS first; second ESC closes window.
+                if (document.fullscreenElement) {
+                    e.preventDefault();
+                    document.exitFullscreen().catch(function() {});
+                } else {
+                    // Notify control panel & close
+                    ch.postMessage({ type: 'closed' });
+                    window.close();
+                }
+            }
+        });
+
+        // ---- Click navigation: left half = prev, right half = next ----
+        dom.pageArea.addEventListener('click', function(e) {
+            const rect = dom.pageArea.getBoundingClientRect();
+            if (e.clientX < rect.left + rect.width / 2) {
+                if (currentPage > 0) renderPage(currentPage - 1, true);
+            } else {
+                if (currentPage < totalPages - 1) renderPage(currentPage + 1, true);
+            }
+        });
+
+        // ---- Notify ready ----
+        ch.postMessage({ type: 'ready' });
+
+    })();
+    </script>
+</body>
+</html>
